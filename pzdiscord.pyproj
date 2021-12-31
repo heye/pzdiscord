@@ -21,7 +21,23 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="config.py" />
     <Compile Include="main.py" />
+    <Compile Include="rcon_Src\asyncio.py" />
+    <Compile Include="rcon_Src\client.py" />
+    <Compile Include="rcon_Src\config.py" />
+    <Compile Include="rcon_Src\console.py" />
+    <Compile Include="rcon_Src\errorhandler.py" />
+    <Compile Include="rcon_Src\exceptions.py" />
+    <Compile Include="rcon_Src\gui.py" />
+    <Compile Include="rcon_Src\proto.py" />
+    <Compile Include="rcon_Src\rconclt.py" />
+    <Compile Include="rcon_Src\rconshell.py" />
+    <Compile Include="rcon_Src\readline.py" />
+    <Compile Include="rcon_Src\__init__.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="rcon_Src\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

@@ -1,0 +1,7 @@
+load config from: config.cfg
+CONFIG LOADING DONE
+Discord logged in as pz-server#0854
+COMMAND: save
+RCON RESPONSE: World saved
+COMMAND: servermsg "test"
+RCON RESPONSE: Message sent.

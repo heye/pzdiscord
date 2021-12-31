@@ -1,18 +1,51 @@
 import sys
-from typing import List
-from rcon import Client
+import multiprocessing
+from typing import List, Dict
+from rcon_src import Client
 import discord
 from config import Config
+import traceback
+import time 
+import subprocess
 
-def run_rcon(cmd: str) -> str:
+
+def force_quit_process(pid: str):
+    #Note: script must run as root for this to work?
+    cmd = ["kill", "-9", pid]
+    print(cmd)
+    out, err = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE
+    ).communicate()
+    #kill doesn't return anything
+    #print("KILL RESULT: " + out.decode("utf-8"))
+
+
+def run_rcon(cmd: str, return_dict: Dict[str, any]) -> str:
     try:
         with Client(Config.rcon_ip, int(Config.rcon_port), passwd=Config.rcon_passwd) as client:
             response = client.run(cmd)
 
-        print("RCON RESPONSE: " + str(response))
-        return str(response)
+        #print("RCON RESPONSE: " + str(response))
+        return_dict.update({"reply": response})
     except:
-        return "error"
+        traceback.print_exc()
+        return_dict.update({"reply": "rcon exception"})
+
+
+def run_rcon_safe(cmd: str) -> str:
+    manager = multiprocessing.Manager()
+    return_dict = manager.dict()
+    jobs = []
+    p = multiprocessing.Process(target=run_rcon, args=(cmd, return_dict))
+    p.start()
+    p.join(3) # wait max 3 seconds for rcon - after that assume it crashed and must be force quit
+    if p.is_alive():
+        force_quit_process(str(p.pid))
+        p.join(1)
+        return "rcon timeout (you should try again in a minute or so)"
+
+    return return_dict.get("reply", "no reply from rcon")
 
 
 def split_lines2000(input: str) -> List[str]:
@@ -92,7 +125,8 @@ def main(argv) -> int:
             for one_cmd in allowed_commands:
                 if message.content.startswith(one_cmd):
                     print("COMMAND: " + message.content)
-                    reply = run_rcon(message.content)
+                    reply = run_rcon_safe(message.content)
+                    print("REPLY: " + message.content)
                     if len(reply) < 2000:
                         await message.channel.send(reply)
                     else:
