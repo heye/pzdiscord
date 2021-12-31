@@ -17,8 +17,8 @@ def force_quit_process(pid: str):
         cmd,
         stdout=subprocess.PIPE
     ).communicate()
-    #kill doesn't return anything
     #print("KILL RESULT: " + out.decode("utf-8"))
+    return out.decode("utf-8")
 
 
 def run_rcon(cmd: str, return_dict: Dict[str, any]) -> str:
@@ -39,7 +39,7 @@ def run_rcon_safe(cmd: str) -> str:
     jobs = []
     p = multiprocessing.Process(target=run_rcon, args=(cmd, return_dict))
     p.start()
-    p.join(3) # wait max 3 seconds for rcon - after that assume it crashed and must be force quit
+    p.join(10) # wait max 10 seconds for rcon - after that assume it crashed and must be force quit
     if p.is_alive():
         force_quit_process(str(p.pid))
         p.join(1)
@@ -62,6 +62,38 @@ def split_lines2000(input: str) -> List[str]:
         blocks.append(one_line)
 
     return blocks
+
+
+def cmd_serverstate() -> str:    
+    cmd = ["pgrep", "ProjectZomboid"]
+    print(cmd)
+    out, err = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE
+    ).communicate()
+    pgrep = out.decode("utf-8")
+    
+    cmd = ["netstat", "-plnu"]
+    print(cmd)
+    out, err = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE
+    ).communicate()
+    netstat = out.decode("utf-8")
+
+    return "Zomboid PID: " + pgrep + "\n netstat: \n" + netstat
+
+
+def cmd_forcekill(cmd: str) -> str:    
+    parts = cmd.split()
+    if len(parts) != 2:
+        return "forcekill requires PID argument. e.g. 'forcekill 12345'"
+
+    ret = force_quit_process(parts[1])
+    if not ret:
+        return "success"
+
+    return ret
 
 
 def main(argv) -> int:
@@ -106,7 +138,9 @@ def main(argv) -> int:
         "teleportto",
         "unbanid",
         "unbanuser",
-        "voiceban"]
+        "voiceban",
+        "serverstate",
+        "forcekill"]
 
     client = discord.Client()
 
@@ -123,16 +157,28 @@ def main(argv) -> int:
                     
         if str(message.channel.id) == Config.discord_channel_id:
             for one_cmd in allowed_commands:
+                print("COMMAND: " + message.content)
+
+                if message.content.startswith("serverstate"):
+                    reply = cmd_serverstate()
+
+                if message.content.startswith("forcekill"):
+                    reply = cmd_forcekill(message.content)
+
                 if message.content.startswith(one_cmd):
-                    print("COMMAND: " + message.content)
                     reply = run_rcon_safe(message.content)
-                    print("REPLY: " + message.content)
+
+                if reply:
+                    print("REPLY: " + reply)
                     if len(reply) < 2000:
                         await message.channel.send(reply)
                     else:
                         for line in split_lines2000(reply):
                             await message.channel.send(line)
                     return
+
+
+                
 
             await message.channel.send("unknown command " + message.content)
             
