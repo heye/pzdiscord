@@ -159,6 +159,7 @@ def main(argv) -> int:
             for one_cmd in allowed_commands:
                 print("COMMAND: " + message.content)
 
+                reply = ""
                 if message.content.startswith("serverstate"):
                     reply = cmd_serverstate()
 
