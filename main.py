@@ -1,7 +1,7 @@
 import sys
 import multiprocessing
 from typing import List, Dict
-from rcon_src import Client
+from rcon import Client
 import discord
 from config import Config
 import traceback
