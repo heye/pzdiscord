@@ -172,16 +172,16 @@ def main(argv) -> int:
                 print("COMMAND: " + message.content)
 
                 reply = ""
-                if message.content.startswith("serverstate"):
+                if not reply and message.content.startswith("serverstate"):
                     reply = cmd_serverstate()
 
-                if message.content.startswith("forcekill"):
+                if not reply and message.content.startswith("forcekill"):
                     reply = cmd_forcekill(message.content)
 
-                if message.content.startswith("startserver"):
+                if not reply and message.content.startswith("startserver"):
                     reply = cmd_start_server()
 
-                if message.content.startswith(one_cmd):
+                if not reply and message.content.startswith(one_cmd):
                     reply = run_rcon_safe(message.content)
 
                 if reply:
