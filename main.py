@@ -97,7 +97,7 @@ def cmd_forcekill(cmd: str) -> str:
 
 def cmd_start_server() -> str:
     #Note: script must run as root for this to work
-    cmd = ["sudo", "-u", "/home/ubuntu/check_server.sh"]
+    cmd = ["sudo", "-u", "ubuntu", "/home/ubuntu/check_server.sh"]
     print(cmd)
     out, err = subprocess.Popen(
         cmd,
