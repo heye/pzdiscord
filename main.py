@@ -32,7 +32,6 @@ def run_rcon(cmd: str, return_dict: Dict[str, any]) -> str:
         traceback.print_exc()
         return_dict.update({"reply": "rcon exception"})
 
-
 def run_rcon_safe(cmd: str) -> str:
     manager = multiprocessing.Manager()
     return_dict = manager.dict()
@@ -96,6 +95,18 @@ def cmd_forcekill(cmd: str) -> str:
     return ret
 
 
+def cmd_start_server() -> str:
+    #Note: script must run as root for this to work
+    cmd = ["sudo", "-u", "/home/ubuntu/check_server.sh"]
+    print(cmd)
+    out, err = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE
+    ).communicate()
+    #print("KILL RESULT: " + out.decode("utf-8"))
+    return out.decode("utf-8")
+
+
 def main(argv) -> int:
     
     Config.load(argv)
@@ -140,7 +151,8 @@ def main(argv) -> int:
         "unbanuser",
         "voiceban",
         "serverstate",
-        "forcekill"]
+        "forcekill",
+        "startserver"]
 
     client = discord.Client()
 
@@ -165,6 +177,9 @@ def main(argv) -> int:
 
                 if message.content.startswith("forcekill"):
                     reply = cmd_forcekill(message.content)
+
+                if message.content.startswith("startserver"):
+                    reply = cmd_start_server()
 
                 if message.content.startswith(one_cmd):
                     reply = run_rcon_safe(message.content)
